@@ -137,6 +137,7 @@ UPROGS=\
 	$U/_uthread\
 	$U/_call\
 	$U/_sleep\
+	$U/_pingpong\
 	$U/_kalloctest\
 	$U/_bcachetest\
 	$U/_mounttest\
