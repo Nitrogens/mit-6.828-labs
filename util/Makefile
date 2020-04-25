@@ -138,6 +138,7 @@ UPROGS=\
 	$U/_call\
 	$U/_sleep\
 	$U/_pingpong\
+	$U/_primes\
 	$U/_kalloctest\
 	$U/_bcachetest\
 	$U/_mounttest\
