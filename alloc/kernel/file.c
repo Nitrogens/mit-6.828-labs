@@ -37,6 +37,7 @@ filealloc(void)
       release(&ftable.lock);
       return 0;
   }
+  memset(f, 0, sizeof(struct file));
   f->ref = 1;
   release(&ftable.lock);
   return f;
@@ -58,17 +59,29 @@ filedup(struct file *f)
 void
 fileclose(struct file *f)
 {
-  acquire(&ftable.lock);
-  if(f->ref < 1)
-    panic("fileclose");
-  if(--f->ref > 0){
+    struct file ff;
+
+    acquire(&ftable.lock);
+    if(f->ref < 1)
+        panic("fileclose");
+    if(--f->ref > 0){
+        release(&ftable.lock);
+        return;
+    }
+    ff = *f;
+    f->ref = 0;
+    f->type = FD_NONE;
     release(&ftable.lock);
-    return;
-  }
-  f->ref = 0;
-  f->type = FD_NONE;
-  bd_free(f);
-  release(&ftable.lock);
+
+    if(ff.type == FD_PIPE){
+        pipeclose(ff.pipe, ff.writable);
+    } else if(ff.type == FD_INODE || ff.type == FD_DEVICE){
+        begin_op(ff.ip->dev);
+        iput(ff.ip);
+        end_op(ff.ip->dev);
+    }
+
+    bd_free(f);
 }
 
 // Get metadata about file f.
